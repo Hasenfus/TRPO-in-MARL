@@ -15,7 +15,7 @@ class MujocoRunner(Runner):
     def __init__(self, config):
         super(MujocoRunner, self).__init__(config)
 
-    def run(self):
+    def run(self, malfunction = False, mal_episode = 30_000, malagent = None):
         self.warmup()
 
         start = time.time()
@@ -27,11 +27,23 @@ class MujocoRunner(Runner):
             if self.use_linear_lr_decay:
                 self.trainer.policy.lr_decay(episode, episodes)
 
+            if episode % mal_episode == 0 and malfunction:
+                if malagent is None:
+                    malagent = np.random.randint(0, self.num_agents)
+                    break_leg = True
+                    print("malfunctioning agent is ", malagent)
+                else:
+                    break_leg = True
+                    print("malfunctioning agent is ", malagent)
+
             done_episodes_rewards = []
 
             for step in range(self.episode_length):
                 # Sample actions
-                values, actions, action_log_probs, rnn_states, rnn_states_critic = self.collect(step)
+                if malfunction and break_leg:
+                    values, actions, action_log_probs, rnn_states, rnn_states_critic = self.collect(step, malagent)
+                else:
+                    values, actions, action_log_probs, rnn_states, rnn_states_critic = self.collect(step)
 
                 # Obser reward and next obs
                 obs, share_obs, rewards, dones, infos, _ = self.envs.step(actions)
@@ -98,7 +110,7 @@ class MujocoRunner(Runner):
             self.buffer[agent_id].obs[0] = obs[:, agent_id].copy()
 
     @torch.no_grad()
-    def collect(self, step):
+    def collect(self, step, malagent = None):
         value_collector = []
         action_collector = []
         action_log_prob_collector = []
@@ -113,7 +125,10 @@ class MujocoRunner(Runner):
                                                             self.buffer[agent_id].rnn_states_critic[step],
                                                             self.buffer[agent_id].masks[step])
             value_collector.append(_t2n(value))
-            action_collector.append(_t2n(action))
+            if malagent is not None:
+                action_collector.append(np.zeros_like(_t2n(action)))
+            else:
+                action_collector.append(_t2n(action))
             action_log_prob_collector.append(_t2n(action_log_prob))
             rnn_state_collector.append(_t2n(rnn_state))
             rnn_state_critic_collector.append(_t2n(rnn_state_critic))
