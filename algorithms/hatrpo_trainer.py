@@ -314,7 +314,7 @@ class HATRPO():
         if not flag:
             params = self.flat_params(old_actor)
             self.update_model(self.policy.actor, params)
-            print('policy update does not impove the surrogate')
+            # print('policy update does not impove the surrogate')
 
         return value_loss, critic_grad_norm, kl, loss_improve, expected_improve, dist_entropy, ratio
 

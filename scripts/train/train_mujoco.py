@@ -21,7 +21,10 @@ def make_train_env(all_args):
                 env_args = {"scenario": all_args.scenario,
                             "agent_conf": all_args.agent_conf,
                             "agent_obsk": all_args.agent_obsk,
-                            "episode_limit": 1000}
+                            "episode_limit": all_args.episode_length,
+                            "healthy_reward":0.1,
+                            "terminate_when_unhealthy":False,
+                            "use_contact_forces":False}
                 env = MujocoMulti(env_args=env_args)
             else:
                 print("Can not support the " + all_args.env_name + "environment.")
@@ -44,7 +47,10 @@ def make_eval_env(all_args):
                 env_args = {"scenario": all_args.scenario,
                             "agent_conf": all_args.agent_conf,
                             "agent_obsk": all_args.agent_obsk,
-                            "episode_limit": 1000}
+                            "episode_limit": all_args.episode_length,
+                            "healthy_reward":0.1,
+                            "terminate_when_unhealthy":False,
+                            "use_contact_forces":False}
                 env = MujocoMulti(env_args=env_args)
             else:
                 print("Can not support the " + all_args.env_name + "environment.")
@@ -61,7 +67,7 @@ def make_eval_env(all_args):
 
 
 def parse_args(args, parser):
-    parser.add_argument('--scenario', type=str, default='Hopper-v2', help="Which mujoco task to run on")
+    parser.add_argument('--scenario', type=str, default='Hopper-v2', help="Which mujoco-old task to run on")
     parser.add_argument('--agent_conf', type=str, default='3x1')
     parser.add_argument('--agent_obsk', type=int, default=0)
     parser.add_argument("--add_move_state", action='store_true', default=False)
@@ -77,6 +83,8 @@ def parse_args(args, parser):
     parser.add_argument("--use_mustalive", action='store_false', default=True)
     parser.add_argument("--add_center_xy", action='store_true', default=False)
     parser.add_argument("--use_single_network", action='store_true', default=False)
+    parser.add_argument("--episode_len", type=int, default=100)
+
 
     all_args = parser.parse_known_args(args)[0]
 
@@ -88,7 +96,7 @@ def main(args):
     all_args = parse_args(args, parser)
     print("all config: ", all_args)
     if all_args.seed_specify:
-        all_args.seed=all_args.runing_id
+        all_args.seed=all_args.running_id
     else:
         all_args.seed=np.random.randint(1000,10000)
     print("seed is :",all_args.seed)

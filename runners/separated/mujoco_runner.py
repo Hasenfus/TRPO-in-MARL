@@ -22,7 +22,7 @@ class MujocoRunner(Runner):
         episodes = int(self.num_env_steps) // self.episode_length // self.n_rollout_threads
 
         train_episode_rewards = [0 for _ in range(self.n_rollout_threads)]
-
+        break_leg = False
         for episode in range(episodes):
             if self.use_linear_lr_decay:
                 self.trainer.policy.lr_decay(episode, episodes)
@@ -125,7 +125,7 @@ class MujocoRunner(Runner):
                                                             self.buffer[agent_id].rnn_states_critic[step],
                                                             self.buffer[agent_id].masks[step])
             value_collector.append(_t2n(value))
-            if malagent is not None:
+            if malagent is not None and agent_id == malagent:
                 action_collector.append(np.zeros_like(_t2n(action)))
             else:
                 action_collector.append(_t2n(action))
