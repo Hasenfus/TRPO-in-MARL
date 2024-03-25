@@ -15,11 +15,12 @@ class MujocoRunner(Runner):
     def __init__(self, config):
         super(MujocoRunner, self).__init__(config)
 
-    def run(self, malfunction = False, mal_episode = 30_000, malagent = None):
+    def run(self, malfunction = False, mal_episode = 30_000, malagent_old = None, malagent_new = None):
         self.warmup()
 
         start = time.time()
         episodes = int(self.num_env_steps) // self.episode_length // self.n_rollout_threads
+        mal_episode = mal_episode // self.n_rollout_threads
 
         train_episode_rewards = [0 for _ in range(self.n_rollout_threads)]
         break_leg = False
@@ -41,7 +42,7 @@ class MujocoRunner(Runner):
             for step in range(self.episode_length):
                 # Sample actions
                 if malfunction and break_leg:
-                    values, actions, action_log_probs, rnn_states, rnn_states_critic = self.collect(step, malagent)
+                    values, actions, action_log_probs, rnn_states, rnn_states_critic = self.collect(step, malagent_old, malagent_new)
                 else:
                     values, actions, action_log_probs, rnn_states, rnn_states_critic = self.collect(step)
 
@@ -110,12 +111,18 @@ class MujocoRunner(Runner):
             self.buffer[agent_id].obs[0] = obs[:, agent_id].copy()
 
     @torch.no_grad()
-    def collect(self, step, malagent = None):
+    def collect(self, step, malagent_old = None, malagent_new = None):
         value_collector = []
         action_collector = []
         action_log_prob_collector = []
         rnn_state_collector = []
         rnn_state_critic_collector = []
+        old_agent_action = None
+        new_agent_action = None
+        if malagent_old == -1 and malagent_new == 1:
+            malagent_old = 0
+        if malagent_old == -1 and malagent_new == 3:
+            malagent_old = 2
         for agent_id in range(self.num_agents):
             self.trainer[agent_id].prep_rollout()
             value, action, action_log_prob, rnn_state, rnn_state_critic \
@@ -125,14 +132,25 @@ class MujocoRunner(Runner):
                                                             self.buffer[agent_id].rnn_states_critic[step],
                                                             self.buffer[agent_id].masks[step])
             value_collector.append(_t2n(value))
-            if malagent is not None and agent_id == malagent:
-                action_collector.append(np.zeros_like(_t2n(action)))
-            else:
-                action_collector.append(_t2n(action))
+            #
+
+            action_collector.append(_t2n(action))
             action_log_prob_collector.append(_t2n(action_log_prob))
             rnn_state_collector.append(_t2n(rnn_state))
             rnn_state_critic_collector.append(_t2n(rnn_state_critic))
         # [self.envs, agents, dim]
+
+        if malagent_old is not None:
+            if malagent_new is not None:
+                action_collector[malagent_old] = action_collector[malagent_new]
+                action_collector[malagent_new] = np.zeros_like(action_collector[malagent_new])
+                action_log_prob_collector[malagent_old] = action_log_prob_collector[malagent_new]
+                action_log_prob_collector[malagent_new] = np.zeros_like(action_log_prob_collector[malagent_new])
+            else:
+                action_collector[malagent_old] = np.zeros_like(action_collector[malagent_old])
+                action_log_prob_collector[malagent_old] = np.zeros_like(action_log_prob_collector[malagent_old])
+
+
         values = np.array(value_collector).transpose(1, 0, 2)
         actions = np.array(action_collector).transpose(1, 0, 2)
         action_log_probs = np.array(action_log_prob_collector).transpose(1, 0, 2)
