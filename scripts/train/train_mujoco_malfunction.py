@@ -108,6 +108,8 @@ def main(args):
         print("choose to use gpu...")
         device = torch.device("cuda:0")
         torch.set_num_threads(all_args.n_training_threads)
+        print(f"device count :: {torch.cuda.device_count()}")
+
         if all_args.cuda_deterministic:
             torch.backends.cudnn.benchmark = False
             torch.backends.cudnn.deterministic = True
@@ -115,6 +117,7 @@ def main(args):
         print("choose to use cpu...")
         device = torch.device("cpu")
         torch.set_num_threads(all_args.n_training_threads)
+        print(f"device count :: {torch.cuda.device_count()}")
 
     run_dir = Path(os.path.split(os.path.dirname(os.path.abspath(__file__)))[
                        0] + f"/results/malfunction/{all_args.mal_agent}") / all_args.env_name / all_args.scenario / all_args.algorithm_name / all_args.experiment_name / str(all_args.seed)

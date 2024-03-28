@@ -20,7 +20,7 @@ class MujocoRunner(Runner):
 
         start = time.time()
         episodes = int(self.num_env_steps) // self.episode_length // self.n_rollout_threads
-        mal_episode = mal_episode // self.n_rollout_threads
+        mal_episode = int(mal_episode) // self.episode_length // self.n_rollout_threads
 
         train_episode_rewards = [0 for _ in range(self.n_rollout_threads)]
         break_leg = False
@@ -29,13 +29,8 @@ class MujocoRunner(Runner):
                 self.trainer.policy.lr_decay(episode, episodes)
 
             if episode % mal_episode == 0 and malfunction:
-                if malagent is None:
-                    malagent = np.random.randint(0, self.num_agents)
                     break_leg = True
-                    print("malfunctioning agent is ", malagent)
-                else:
-                    break_leg = True
-                    print("malfunctioning agent is ", malagent)
+                    # print("malfunctioning agent is ", malagent)
 
             done_episodes_rewards = []
 
