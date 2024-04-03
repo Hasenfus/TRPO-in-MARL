@@ -35,8 +35,8 @@ commit_changes () {
 #train_model ./configs/ant_config_4.yaml ./Training/train_mujuco_malfunction.py ./learning_curves/Ant.2x4.0.001.350.0.99/malfunction/ ./tmp/policy/Ant.2x4.0.001.350.0.99malfunction/ 2 4
 
 
-#bash /home/pearl0/Desktop/MARL/TRPO-in-MARL/scripts/train_mujoco.sh "happo" 600000
-#bash /home/pearl0/Desktop/MARL/TRPO-in-MARL/scripts/train_mujoco.sh "hatrpo" 600000
+bash /home/pearl0/Desktop/MARL/TRPO-in-MARL/scripts/train_mujoco.sh "happo" 6000000
+bash /home/pearl0/Desktop/MARL/TRPO-in-MARL/scripts/train_mujoco.sh "hatrpo" 6000000
 
 bash /home/pearl0/Desktop/MARL/TRPO-in-MARL/scripts/train_mujoco_malfunction.sh "happo" True 0 3000000 6000000
 bash /home/pearl0/Desktop/MARL/TRPO-in-MARL/scripts/train_mujoco_malfunction.sh "hatrpo" True 0 3000000 6000000
