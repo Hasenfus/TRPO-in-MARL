@@ -5,7 +5,7 @@ agent_conf="4x2"
 agent_obsk=2
 algo=$1
 exp="mlp"
-running_max=5
+running_max=$6
 kl_threshold=1e-4
 num_env_steps=$2
 echo "env is ${env}, scenario is ${scenario}, algo is ${algo}, exp is ${exp}, max seed is ${seed_max}"

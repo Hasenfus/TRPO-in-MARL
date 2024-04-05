@@ -5,12 +5,13 @@ agent_conf="4x2"
 agent_obsk=2
 algo=$1
 exp="mlp"
-running_max=4
+
 kl_threshold=1e-4
 malfunction=$2
 mal_agent=$3
 mal_episode=$4
 env_steps=$5
+running_max=$6
 echo "env is ${env}, scenario is ${scenario}, algo is ${algo}, exp is ${exp}, max seed is ${seed_max}"
 for number in `seq ${running_max}`;
 do
