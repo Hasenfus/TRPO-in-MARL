@@ -38,10 +38,10 @@ commit_changes () {
 #bash /home/pearl0/Desktop/MARL/TRPO-in-MARL/scripts/train_mujoco.sh "happo" 6000000
 #bash /home/pearl0/Desktop/MARL/TRPO-in-MARL/scripts/train_mujoco.sh "hatrpo" 6000000
 
-bash /home/pearl0/Desktop/MARL/TRPO-in-MARL/scripts/train_mujoco_malfunction.sh "happo" True 2 3000000 6000000 5
-bash /home/pearl0/Desktop/MARL/TRPO-in-MARL/scripts/train_mujoco_malfunction.sh "hatrpo" True 2 3000000 6000000 5
+bash /home/pearl0/Desktop/MARL/TRPO-in-MARL/scripts/train_mujoco_malfunction.sh "happo" True 2 3000000 6000000 1
+bash /home/pearl0/Desktop/MARL/TRPO-in-MARL/scripts/train_mujoco_malfunction.sh "hatrpo" True 2 3000000 6000000 3
 
-bash /home/pearl0/Desktop/MARL/TRPO-in-MARL/scripts/train_mujoco_malfunction.sh "hatrpo" True 0 3000000 6000000 4
-bash /home/pearl0/Desktop/MARL/TRPO-in-MARL/scripts/train_mujoco_malfunction.sh "happo" True 0 3000000 6000000 1
+bash /home/pearl0/Desktop/MARL/TRPO-in-MARL/scripts/train_mujoco_malfunction.sh "hatrpo" True 0 3000000 6000000 2
+bash /home/pearl0/Desktop/MARL/TRPO-in-MARL/scripts/train_mujoco_malfunction.sh "happo" True 0 3000000 6000000 2
 
 
