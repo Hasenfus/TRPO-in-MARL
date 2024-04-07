@@ -126,7 +126,7 @@ def average_and_confidence(rewards):
 
 
 def plot_with_confidence_interval(mean_values, confidence_interval, timesteps, title="Plot with Confidence Interval", xlabel="Timestep", ylabel="Value",
-                                  ylim=None, smoothing_factor=0.0, save=False, save_path='/Users/Hunter/Development/Academic/UML/RL/Hasenfus-RL/Multi-Agent/maddpg/experiments/plots', legend=True, show_title=True):
+                                  ylim=None, smoothing_factor=0.0, save=False, save_path='/Users/Hunter/Development/Academic/UML/RL/Hasenfus-RL/Multi-Agent/maddpg/experiments/plots', legend=True, show_title=True, fig_size=(4, 3)):
     """
     Plot mean values with confidence interval, with optional smoothing.
 
@@ -144,7 +144,7 @@ def plot_with_confidence_interval(mean_values, confidence_interval, timesteps, t
     upper_bound = smoothed_means + smoothed_ci
     lower_bound = smoothed_means - smoothed_ci
 
-    fig, ax = plt.subplots(figsize=(4, 3))
+    fig, ax = plt.subplots(figsize=fig_size)
 
     # Remove top and right spines
     ax.spines['top'].set_visible(False)
@@ -191,7 +191,7 @@ def plot_with_confidence_interval(mean_values, confidence_interval, timesteps, t
     # Show the plot
     plt.show()
 def plot_multiple_with_confidence_intervals(mean_values_list, confidence_intervals_list, timesteps, labels, title="Comparison Plot", xlabel="Timestep", ylabel="Value",
-                                            save=False, legend = True,  save_path='/Users/Hunter/Development/Academic/UML/RL/Hasenfus-RL/Multi-Agent/maddpg/experiments/plots', ylim=None, smoothing_factor=0.0, show_title=True):
+                                            save=False, legend = True,  save_path='/Users/Hunter/Development/Academic/UML/RL/Hasenfus-RL/Multi-Agent/maddpg/experiments/plots', ylim=None, smoothing_factor=0.0, show_title=True, fig_size=(4, 3)):
     """
     Plot multiple sets of mean values with their confidence intervals, with optional smoothing.
 
@@ -204,7 +204,7 @@ def plot_multiple_with_confidence_intervals(mean_values_list, confidence_interva
     :param ylabel: Label for the y-axis.
     :param smoothing_factor: Smoothing factor between 0 and 1.
     """
-    fig, ax = plt.subplots(figsize=(4, 3))
+    fig, ax = plt.subplots(figsize=fig_size)
 
     # Update the rcParams for this figure specifically
     plt.rcParams.update({
@@ -270,7 +270,7 @@ def plot_multiple_with_confidence_intervals(mean_values_list, confidence_interva
 
 
 def plot_multiple(mean_values_list, timesteps, labels, title="Comparison Plot", xlabel="Timestep", ylabel="Value",
-                                            save=False, legend = True,  save_path='/Users/Hunter/Development/Academic/UML/RL/Hasenfus-RL/Multi-Agent/maddpg/experiments/plots', ylim=None, smoothing_factor=0.0, show_title=True):
+                                            save=False, legend = True,  save_path='/Users/Hunter/Development/Academic/UML/RL/Hasenfus-RL/Multi-Agent/maddpg/experiments/plots', ylim=None, smoothing_factor=0.0, show_title=True, fig_size=(4, 3)):
     """
     Plot multiple sets of mean values with their confidence intervals, with optional smoothing.
 
@@ -283,7 +283,7 @@ def plot_multiple(mean_values_list, timesteps, labels, title="Comparison Plot", 
     :param ylabel: Label for the y-axis.
     :param smoothing_factor: Smoothing factor between 0 and 1.
     """
-    fig, ax = plt.subplots(figsize=(4, 3))
+    fig, ax = plt.subplots(figsize=fig_size)
 
     # Update the rcParams for this figure specifically
     plt.rcParams.update({
@@ -374,7 +374,47 @@ def replicate_structure_and_copy(src_root, dst_root):
                 print(f"Copied file: {src_file_path} to {dst_file_path}")
 
 
-src_root_directory = '/path/to/source/root'  # Update this path
-dst_root_directory = '/path/to/destination/root'  # Update this path
+def stacked_bar_graph(*tuples):
+    averages = []
+    labels = []
 
-replicate_structure_and_copy(src_root_directory, dst_root_directory)
+    # Compute averages for each array in the tuples
+    for i, arrays in enumerate(tuples):
+        tuple_averages = []
+        for arr in arrays:
+            avg = np.mean(arr)
+            tuple_averages.append(avg)
+        averages.append(tuple_averages)
+        labels.append(f"Tuple {i+1}")
+
+    # Compute the total sum of averages for each tuple
+    totals = [sum(avg_list) for avg_list in averages]
+
+    # Compute the percentages for each array within the tuples
+    percentages = []
+    for avg_list in averages:
+        tuple_percentages = [avg / sum(avg_list) * 100 for avg in avg_list]
+        percentages.append(tuple_percentages)
+
+    # Set up the plot
+    fig, ax = plt.subplots()
+    bar_width = 0.8 / len(tuples)
+    x = np.arange(len(tuples))
+
+    # Create stacked bars for each tuple
+    bottom = np.zeros(len(tuples))
+    for i in range(len(percentages[0])):
+        values = [tuple_percentages[i] for tuple_percentages in percentages]
+        ax.bar(x, values, bar_width, bottom=bottom, label=f"Array {i+1}")
+        bottom += values
+
+    # Customize the plot
+    ax.set_xticks(x)
+    ax.set_xticklabels(labels)
+    ax.set_ylabel("Percentage")
+    ax.set_title("Stacked Bar Graph of Array Averages")
+    ax.legend()
+
+    # Display the plot
+    plt.tight_layout()
+    plt.show()
