@@ -117,8 +117,8 @@ def main(args):
         torch.set_num_threads(all_args.n_training_threads)
         print(f"device count :: {torch.cuda.device_count()}")
 
-    run_dir = all_args.model_dir
-    all_args.model_dir = os.path.join(all_args.model_dir, "models")
+    run_dir = Path(all_args.model_dir)
+    # all_args.model_dir =
 
     setproctitle.setproctitle(
         str(all_args.algorithm_name) + "-" + str(all_args.env_name) + "-" + str(all_args.experiment_name) + "@" + str(
@@ -140,12 +140,13 @@ def main(args):
         "eval_envs": eval_envs,
         "num_agents": num_agents,
         "device": device,
-        "run_dir": run_dir
+        "run_dir": run_dir,
+        "test_dir": run_dir / "test"
     }
 
     # run experiments
     runner = Runner(config)
-    runner.run()
+    runner.test()
 
     # post process
     envs.close()
