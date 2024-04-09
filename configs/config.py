@@ -289,8 +289,8 @@ def get_config():
                         default=100, help="time duration between contiunous twice models saving.")
     parser.add_argument("--log_interval", type=int, 
                         default=5, help="time duration between contiunous twice log printing.")
-    parser.add_argument("--model_dir", type=str, 
-                        default=None, help="by default None. set the path to pretrained model.")
+    # parser.add_argument("--model_dir", type=str,
+    #                     default=None, help="by default None. set the path to pretrained model.")
 
     # eval parameters
     parser.add_argument("--use_eval", action='store_true', 

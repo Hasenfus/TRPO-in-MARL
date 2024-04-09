@@ -19,6 +19,7 @@ class Runner(object):
         self.eval_envs = config['eval_envs']
         self.device = config['device']
         self.num_agents = config['num_agents']
+        self.test_dir = config['test_dir']
 
         # parameters
         self.env_name = self.all_args.env_name

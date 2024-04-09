@@ -205,7 +205,7 @@ class MujocoRunner(Runner):
         all_last_xy = []
         all_tot_dist = []
         final_ep_rewards = []
-
+        print("Running tests")
         for episode in range(test_episodes):
             done_episodes_rewards = []
             trajectory = []
@@ -222,34 +222,37 @@ class MujocoRunner(Runner):
                         done_episodes_rewards.append(reward_env[t])
 
                 info_dict = infos[0][0]
-                trajectory.append((info_dict['agent_0']['x_position'], info_dict['agent_0']['y_position']))
+                # print(type(infos), infos, info_dict)
+                # print(obs)
+                # print(share_obs)
+                trajectory.append((info_dict['xposition'], info_dict['yposition']))
 
                 if np.any(dones_env):
                     break
 
             final_ep_rewards.append(np.mean(done_episodes_rewards))
             all_trajectories.append(trajectory)
-            all_last_x.append(info_dict['agent_0']['x_position'])
-            all_last_xy.append((info_dict['agent_0']['x_position'], info_dict['agent_0']['y_position']))
-            all_tot_dist.append(info_dict['agent_0']['distance_from_origin'])
+            # all_last_x.append(info_dict['x_position'])
+            # all_last_xy.append((info_dict['x_position'], info_dict['y_position']))
+            all_tot_dist.append(info_dict['tot_distance'])
 
         directory_name_with_time = time.strftime("%Y%m%d-%H%M%S")
-        full_directory_path = os.path.join(self.config['maddpg']['plots_dir'], directory_name_with_time)
+        full_directory_path = os.path.join(self.test_dir, directory_name_with_time)
 
         if not os.path.exists(full_directory_path):
             os.makedirs(full_directory_path)
 
-        rew_file_name = os.path.join(full_directory_path, self.config['maddpg']['exp_name'] + '_healthy_rewards.pkl')
+        rew_file_name = os.path.join(full_directory_path, 'test' + '_healthy_rewards.pkl')
         with open(rew_file_name, 'wb') as fp:
             pickle.dump(final_ep_rewards, fp)
 
         trajectories_file_name = os.path.join(full_directory_path,
-                                              self.config['maddpg']['exp_name'] + '_healthy_trajectories.pkl')
+                                              'test' + '_healthy_trajectories.pkl')
         with open(trajectories_file_name, 'wb') as fp:
             pickle.dump(all_trajectories, fp)
 
         distances_file_name = os.path.join(full_directory_path,
-                                           self.config['maddpg']['exp_name'] + '_healthy_distances.pkl')
+                                           'test' + '_healthy_distances.pkl')
         with open(distances_file_name, 'wb') as fp:
             pickle.dump(all_tot_dist, fp)
     @torch.no_grad()
@@ -310,62 +313,3 @@ class MujocoRunner(Runner):
                 self.log_env(eval_env_infos, total_num_steps)
                 print("eval_average_episode_rewards is {}.".format(np.mean(eval_episode_rewards)))
                 break
-
-
-
-    @torch.no_grad()
-    def test(self):
-        self.warmup()
-
-        all_trajectories = []
-        all_last_x = []
-        all_last_xy = []
-        all_tot_dist = []
-        final_ep_rewards = []
-
-        for episode in range(self.test_episodes):
-            done_episodes_rewards = []
-            trajectory = []
-
-            for step in range(self.episode_length):
-                values, actions, action_log_probs, rnn_states, rnn_states_critic = self.collect(step)
-
-                obs, share_obs, rewards, dones, infos, _ = self.envs.step(actions)
-
-                dones_env = np.all(dones, axis=1)
-                reward_env = np.mean(rewards, axis=1).flatten()
-                for t in range(self.n_rollout_threads):
-                    if dones_env[t]:
-                        done_episodes_rewards.append(reward_env[t])
-
-                info_dict = infos[0][0]
-                trajectory.append((info_dict['agent_0']['x_position'], info_dict['agent_0']['y_position']))
-
-                if np.any(dones_env):
-                    break
-
-            final_ep_rewards.append(np.mean(done_episodes_rewards))
-            all_trajectories.append(trajectory)
-            all_last_x.append(info_dict['agent_0']['x_position'])
-            all_last_xy.append((info_dict['agent_0']['x_position'], info_dict['agent_0']['y_position']))
-            all_tot_dist.append(info_dict['agent_0']['distance_from_origin'])
-
-        directory_name_with_time = time.strftime("%Y%m%d-%H%M%S")
-        full_directory_path = os.path.join(self.config['maddpg']['plots_dir'], directory_name_with_time)
-
-        if not os.path.exists(full_directory_path):
-            os.makedirs(full_directory_path)
-
-        rew_file_name = os.path.join(full_directory_path, self.config['maddpg']['exp_name'] + '_healthy_rewards.pkl')
-        with open(rew_file_name, 'wb') as fp:
-            pickle.dump(final_ep_rewards, fp)
-
-        trajectories_file_name = os.path.join(full_directory_path,
-                                              self.config['maddpg']['exp_name'] + '_healthy_trajectories.pkl')
-        with open(trajectories_file_name, 'wb') as fp:
-            pickle.dump(all_trajectories, fp)
-
-        distances_file_name = os.path.join(full_directory_path,
-                                           self.config['maddpg']['exp_name'] + '_healthy_distances.pkl')
-        with open(distances_file_name, 'wb') as fp:
-            pickle.dump(all_tot_dist, fp)

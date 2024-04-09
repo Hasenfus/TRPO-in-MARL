@@ -89,7 +89,7 @@ class MujocoMulti(MultiAgentEnv):
         self.env_version = kwargs["env_args"].get("env_version", 2)
         if self.env_version == 2:
             try:
-                self.wrapped_env = NormalizedActions(gym.make(self.scenario))
+                self.wrapped_env = NormalizedActions(gym.make(self.scenario,))
             except gym.error.Error:
                 self.wrapped_env = NormalizedActions(
                     TimeLimit(partial(env_REGISTRY[self.scenario], **kwargs["env_args"])(),

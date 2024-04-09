@@ -93,11 +93,13 @@ class ManyAgentAntEnv(mujoco_env.MujocoEnv, utils.EzPickle):
             and state[2] >= 0.2 and state[2] <= 1.0
         done = not notdone
         ob = self._get_obs()
+
         return ob, reward, done, dict(
             reward_forward=forward_reward,
             reward_ctrl=-ctrl_cost,
             reward_contact=-contact_cost,
-            reward_survive=survive_reward)
+            reward_survive=survive_reward,
+        )
 
     def _get_obs(self):
         return np.concatenate([
