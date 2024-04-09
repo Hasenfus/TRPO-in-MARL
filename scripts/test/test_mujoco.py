@@ -117,8 +117,8 @@ def main(args):
         torch.set_num_threads(all_args.n_training_threads)
         print(f"device count :: {torch.cuda.device_count()}")
 
-    run_dir = Path(all_args.model_dir)
-    # all_args.model_dir =
+    run_dir = Path(all_args.model_dir) / "test"
+    all_args.model_dir = all_args.model_dir + "/models"
 
     setproctitle.setproctitle(
         str(all_args.algorithm_name) + "-" + str(all_args.env_name) + "-" + str(all_args.experiment_name) + "@" + str(
@@ -153,8 +153,8 @@ def main(args):
     if all_args.use_eval and eval_envs is not envs:
         eval_envs.close()
 
-    runner.writter.export_scalars_to_json(str(runner.log_dir + '/summary.json'))
-    runner.writter.close()
+    # runner.writter.export_scalars_to_json(str(runner.log_dir + '/summary.json'))
+    # runner.writter.close()
 
 
 if __name__ == "__main__":
