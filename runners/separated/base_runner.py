@@ -19,7 +19,8 @@ class Runner(object):
         self.eval_envs = config['eval_envs']
         self.device = config['device']
         self.num_agents = config['num_agents']
-        self.test_dir = config['test_dir']
+
+
 
         # parameters
         self.env_name = self.all_args.env_name
@@ -43,7 +44,10 @@ class Runner(object):
         self.log_interval = self.all_args.log_interval
 
         # dir
-        self.model_dir = self.all_args.model_dir
+        if self.experiment_name == 'test':
+            self.model_dir = self.all_args.model_dir
+        else:
+            self.model_dir = None
 
         if self.use_render:
             import imageio
@@ -87,6 +91,7 @@ class Runner(object):
             self.policy.append(po)
 
         if self.model_dir is not None:
+            self.test_dir = config['test_dir']
             self.restore()
 
         self.trainer = []

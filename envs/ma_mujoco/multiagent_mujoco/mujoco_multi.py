@@ -6,6 +6,7 @@ import numpy as np
 
 from .multiagentenv import MultiAgentEnv
 from .manyagent_swimmer import ManyAgentSwimmerEnv
+from .manyagent_ant import ManyAgentAntEnv
 from .obsk import get_joints_at_kdist, get_parts_and_edges, build_obs
 
 
@@ -15,6 +16,7 @@ def env_fn(env, **kwargs) -> MultiAgentEnv: # TODO: this may be a more complex f
 
 env_REGISTRY = {}
 env_REGISTRY["manyagent_swimmer"] = partial(env_fn, env=ManyAgentSwimmerEnv)
+env_REGISTRY["manyagent_ant"] = partial(env_fn, env=ManyAgentAntEnv)
 
 
 # using code from https://github.com/ikostrikov/pytorch-ddpg-naf
@@ -40,7 +42,8 @@ class MujocoMulti(MultiAgentEnv):
 
     def __init__(self, batch_size=None, **kwargs):
         super().__init__(batch_size, **kwargs)
-        self.scenario = kwargs["env_args"]["scenario"]  # e.g. Ant-v2
+        self.scenario = kwargs["env_args"]["scenario"]
+        # print(self.scenario)# e.g. Ant-v2
         self.agent_conf = kwargs["env_args"]["agent_conf"]  # e.g. '2x3'
 
         self.agent_partitions, self.mujoco_edges, self.mujoco_globals = get_parts_and_edges(self.scenario,
@@ -86,16 +89,18 @@ class MujocoMulti(MultiAgentEnv):
         # load scenario from script
         self.episode_limit = self.args.episode_limit
 
-        self.env_version = kwargs["env_args"].get("env_version", 2)
+        self.env_version = kwargs["env_args"].get("env_version", 3)
+        print(self.env_version)
+        print(self.scenario)
         if self.env_version == 2:
             try:
-                self.wrapped_env = NormalizedActions(gym.make(self.scenario,))
+                self.wrapped_env = NormalizedActions(gym.make(self.scenario))
             except gym.error.Error:
                 self.wrapped_env = NormalizedActions(
                     TimeLimit(partial(env_REGISTRY[self.scenario], **kwargs["env_args"])(),
                               max_episode_steps=self.episode_limit))
         else:
-            assert False, "not implemented!"
+            self.wrapped_env = NormalizedActions(gym.make(self.scenario, healthy_reward = 0.1, terminate_when_unhealthy=False, contact_cost_weight=0))
         self.timelimit_env = self.wrapped_env.env
         self.timelimit_env._max_episode_steps = self.episode_limit
         self.env = self.timelimit_env.env

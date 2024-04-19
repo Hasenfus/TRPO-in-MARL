@@ -1,6 +1,6 @@
 #!/bin/sh
 env="mujoco"
-scenario="Ant-v2"
+scenario="Ant-v3"
 agent_conf="4x2"
 agent_obsk=2
 algo=$1
