@@ -19,6 +19,7 @@ def make_train_env(all_args):
         def init_env():
             if all_args.env_name == "mujoco":
                 env_args = {"scenario": all_args.scenario,
+                            "env_version": 3,
                             "agent_conf": all_args.agent_conf,
                             "agent_obsk": all_args.agent_obsk,
                             "episode_limit": all_args.episode_length,
@@ -45,6 +46,7 @@ def make_eval_env(all_args):
         def init_env():
             if all_args.env_name == "mujoco":
                 env_args = {"scenario": all_args.scenario,
+                            "env_version": 3,
                             "agent_conf": all_args.agent_conf,
                             "agent_obsk": all_args.agent_obsk,
                             "episode_limit": all_args.episode_length,
@@ -137,6 +139,7 @@ def main(args):
     config = {
         "all_args": all_args,
         "envs": envs,
+        "experiment_name": all_args.experiment_name,
         "eval_envs": eval_envs,
         "num_agents": num_agents,
         "device": device,

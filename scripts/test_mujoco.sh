@@ -1,13 +1,13 @@
 #!/bin/sh
 env="mujoco"
-scenario="Ant-v2"
+scenario="Ant-v3"
 agent_conf="4x2"
 agent_obsk=2
 algo=$1
 te=$2
 de=$3
 di=$4
-exp="mlp"
+exp="test"
 model_dir=$5
 kl_threshold=1e-4
 num_trn_steps=$2
