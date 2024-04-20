@@ -149,7 +149,7 @@ def main(args):
 
     # run experiments
     runner = Runner(config)
-    runner.test()
+    runner.test(test_episodes = all_args.test_episodes)
 
     # post process
     envs.close()
