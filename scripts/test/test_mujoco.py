@@ -134,7 +134,8 @@ def main(args):
     # env
     envs = make_train_env(all_args)
     eval_envs = make_eval_env(all_args) if all_args.use_eval else None
-    num_agents = envs.n_agents
+    num_agents = 4
+    print("num_agents:", num_agents)
 
     config = {
         "all_args": all_args,
