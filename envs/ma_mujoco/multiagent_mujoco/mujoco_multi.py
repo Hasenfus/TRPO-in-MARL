@@ -89,7 +89,7 @@ class MujocoMulti(MultiAgentEnv):
         # load scenario from script
         self.episode_limit = self.args.episode_limit
 
-        self.env_version = kwargs["env_args"].get("env_version", 3)
+        self.env_version = kwargs["env_args"].get("env_version", 2)
         print(self.env_version)
         print(self.scenario)
         if self.env_version == 2:
@@ -100,7 +100,7 @@ class MujocoMulti(MultiAgentEnv):
                     TimeLimit(partial(env_REGISTRY[self.scenario], **kwargs["env_args"])(),
                               max_episode_steps=self.episode_limit))
         else:
-            self.wrapped_env = NormalizedActions(gym.make(self.scenario, healthy_reward = 0.1, terminate_when_unhealthy=False, contact_cost_weight=0))
+            self.wrapped_env = NormalizedActions(gym.make(self.scenario, healthy_reward = 0.1, use_contact_forces=False, max_episode_steps=self.episode_limit))
         self.timelimit_env = self.wrapped_env.env
         self.timelimit_env._max_episode_steps = self.episode_limit
         self.env = self.timelimit_env.env
@@ -126,7 +126,7 @@ class MujocoMulti(MultiAgentEnv):
 
         # need to remove dummy actions that arise due to unequal action vector sizes across agents
         flat_actions = np.concatenate([actions[i][:self.action_space[i].low.shape[0]] for i in range(self.n_agents)])
-        obs_n, reward_n, done_n, info_n = self.wrapped_env.step(flat_actions)
+        obs_n, reward_n, done_n,_,  info_n = self.wrapped_env.step(flat_actions)
         self.steps += 1
 
         info = {}

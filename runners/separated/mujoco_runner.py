@@ -14,12 +14,12 @@ def _t2n(x):
 class MujocoRunner(Runner):
     """Runner class to perform training, evaluation. and data collection for SMAC. See parent class for details."""
 
+
     def __init__(self, config):
         super(MujocoRunner, self).__init__(config)
 
     def run(self, malfunction = False, mal_episode = 30_000, malagent_old = None, malagent_new = None):
         self.warmup()
-
         start = time.time()
         episodes = int(self.num_env_steps) // self.episode_length // self.n_rollout_threads
         mal_episode = int(mal_episode) // self.episode_length // self.n_rollout_threads
@@ -37,8 +37,9 @@ class MujocoRunner(Runner):
                     # print("malfunctioning agent is ", malagent_new)
 
             done_episodes_rewards = []
-
+            # print(episode)
             for step in range(self.episode_length):
+                # print(step)
                 # Sample actions
                 if malfunction and break_leg:
                     values, actions, action_log_probs, rnn_states, rnn_states_critic = self.collect(step, malagent_old, malagent_new)
@@ -52,7 +53,7 @@ class MujocoRunner(Runner):
                 reward_env = np.mean(rewards, axis=1).flatten()
                 train_episode_rewards += reward_env
                 for t in range(self.n_rollout_threads):
-                    if dones_env[t]:
+                    if dones_env[t] or step == self.episode_length - 1:
                         done_episodes_rewards.append(train_episode_rewards[t])
                         train_episode_rewards[t] = 0
 
@@ -96,6 +97,7 @@ class MujocoRunner(Runner):
 
             # eval
             if episode % self.eval_interval == 0 and self.use_eval:
+                print("Evaluating")
                 self.eval(total_num_steps)
 
     def warmup(self):
@@ -205,6 +207,18 @@ class MujocoRunner(Runner):
         all_last_xy = []
         all_tot_dist = []
         final_ep_rewards = []
+
+        reward_forward_all = []
+        reward_forward = 0.0
+        reward_ctrl_all = []
+        reward_ctrl = 0.0
+        reward_survive_all = []
+        reward_survive = 0.0
+        healthy_rewards = 0.0
+        healthy_rewards_all = []
+        reward_contact = 0.0
+        reward_contact_all = []
+
         print("Running tests")
         for episode in range(test_episodes):
             done_episodes_rewards = []
@@ -216,25 +230,42 @@ class MujocoRunner(Runner):
                 obs, share_obs, rewards, dones, infos, _ = self.envs.step(actions)
 
                 dones_env = np.all(dones, axis=1)
+                # print(dones_env.shape)
                 reward_env = np.mean(rewards, axis=1).flatten()
                 for t in range(self.n_rollout_threads):
                     if dones_env[t]:
                         done_episodes_rewards.append(reward_env[t])
 
                 info_dict = infos[0][0]
+                # print(infos, rewards)
+                reward_forward += info_dict['reward_forward']
+                reward_ctrl += info_dict['reward_ctrl']
+                reward_survive += info_dict['reward_survive']
+                reward_contact += info_dict['reward_contact']
                 # print(type(infos), infos, info_dict)
                 # print(obs)
                 # print(share_obs)
-                trajectory.append((info_dict['xposition'], info_dict['yposition']))
+                trajectory.append((info_dict['x_position'], info_dict['y_position']))
+                healthy_rewards += rewards
 
                 if np.any(dones_env):
                     break
-
+            print(f"Episode {episode} finished after {reward_forward - reward_ctrl + reward_survive}")
+            healthy_rewards_all.append(healthy_rewards)
+            reward_forward_all.append(reward_forward)
+            reward_ctrl_all.append(reward_ctrl)
+            reward_survive_all.append(reward_survive)
+            reward_contact_all.append(reward_contact)
+            reward_forward = 0.0
+            reward_ctrl = 0.0
+            reward_survive = 0.0
+            healthy_rewards = 0.0
+            reward_contact = 0.0
             final_ep_rewards.append(np.mean(done_episodes_rewards))
             all_trajectories.append(trajectory)
             # all_last_x.append(info_dict['x_position'])
             # all_last_xy.append((info_dict['x_position'], info_dict['y_position']))
-            all_tot_dist.append(info_dict['tot_distance'])
+            all_tot_dist.append(info_dict['distance_from_origin'])
 
         directory_name_with_time = time.strftime("%Y%m%d-%H%M%S")
         full_directory_path = os.path.join(self.test_dir, directory_name_with_time)
@@ -255,6 +286,31 @@ class MujocoRunner(Runner):
                                            'test' + '_healthy_distances.pkl')
         with open(distances_file_name, 'wb') as fp:
             pickle.dump(all_tot_dist, fp)
+
+        reward_for_file_name = os.path.join(full_directory_path,
+                                           'test' + '_reward_forward.pkl')
+        with open(reward_for_file_name, 'wb') as fp:
+            pickle.dump(reward_forward_all, fp)
+
+        reward_survive_file_name = os.path.join(full_directory_path,
+                                           'test' + '_reward_survive.pkl')
+        with open(reward_survive_file_name, 'wb') as fp:
+            pickle.dump(reward_survive_all, fp)
+
+        reward_ctrl_file_name = os.path.join(full_directory_path,
+                                           'test' + '_reward_ctrl.pkl')
+        with open(reward_ctrl_file_name, 'wb') as fp:
+            pickle.dump(reward_ctrl_all, fp)
+
+        reward_contact_file_name = os.path.join(full_directory_path,
+                                        'test' + '_reward_contact.pkl')
+        with open(reward_contact_file_name, 'wb') as fp:
+            pickle.dump(reward_contact_all, fp)
+
+        reward_file_name = os.path.join(full_directory_path,
+                                             'test' + '_healthy_rewards.pkl')
+        with open(reward_file_name, 'wb') as fp:
+            pickle.dump(reward_ctrl_all, fp)
     @torch.no_grad()
     def eval(self, total_num_steps):
         eval_episode = 0
@@ -269,8 +325,9 @@ class MujocoRunner(Runner):
         eval_rnn_states = np.zeros((self.n_eval_rollout_threads, self.num_agents, self.recurrent_N, self.hidden_size),
                                    dtype=np.float32)
         eval_masks = np.ones((self.n_eval_rollout_threads, self.num_agents, 1), dtype=np.float32)
-
+        episode_t = 0
         while True:
+            # print(eval_episode)
             eval_actions_collector = []
             eval_rnn_states_collector = []
             for agent_id in range(self.num_agents):
@@ -288,6 +345,7 @@ class MujocoRunner(Runner):
             # Obser reward and next obs
             eval_obs, eval_share_obs, eval_rewards, eval_dones, eval_infos, _ = self.eval_envs.step(
                 eval_actions)
+            episode_t += 1
             for eval_i in range(self.n_eval_rollout_threads):
                 one_episode_rewards[eval_i].append(eval_rewards[eval_i])
 
@@ -301,7 +359,7 @@ class MujocoRunner(Runner):
                                                           dtype=np.float32)
 
             for eval_i in range(self.n_eval_rollout_threads):
-                if eval_dones_env[eval_i]:
+                if eval_dones_env[eval_i] or episode_t < self.episode_length:
                     eval_episode += 1
                     eval_episode_rewards[eval_i].append(np.sum(one_episode_rewards[eval_i], axis=0))
                     one_episode_rewards[eval_i] = []

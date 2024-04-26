@@ -42,19 +42,20 @@ class Runner(object):
         self.use_eval = self.all_args.use_eval
         self.eval_interval = self.all_args.eval_interval
         self.log_interval = self.all_args.log_interval
-
+        print(self.experiment_name)
         # dir
         if self.experiment_name == 'test':
             self.model_dir = self.all_args.model_dir
         else:
             self.model_dir = None
-
+        print(self.use_render)
         if self.use_render:
             import imageio
             self.run_dir = config["run_dir"]
             self.gif_dir = str(self.run_dir / 'gifs')
             if not os.path.exists(self.gif_dir):
                 os.makedirs(self.gif_dir)
+            print(self.gif_dir)
         else:
             self.run_dir = config["run_dir"]
             self.log_dir = str(self.run_dir / 'logs')

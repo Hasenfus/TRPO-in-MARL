@@ -43,12 +43,9 @@ commit_changes () {
 bash /home/pearl0/Desktop/MARL/TRPO-in-MARL/scripts/test_mujoco.sh "happo" 100 2 50 /home/pearl0/Desktop/MARL/TRPO-in-MARL/scripts/results/mujoco/Ant-v3/happo/mlp/1/run8/
 bash /home/pearl0/Desktop/MARL/TRPO-in-MARL/scripts/test_mujoco.sh "hatrpo" 100 2 50 /home/pearl0/Desktop/MARL/TRPO-in-MARL/scripts/results/mujoco/Ant-v3/hatrpo/mlp/1/run2/
 
-
-
 #pers comp
 #bash /Users/Hunter/Development/Academic/UML/RL/Hasenfus-RL/Multi-Agent/TRPO-in-MARL/scripts/test_mujoco.sh "happo" 100 2 50
 #bash /Users/Hunter/Development/Academic/UML/RL/Hasenfus-RL/Multi-Agent/TRPO-in-MARL/scripts/test_mujoco.sh "hatrpo" 100 2 50
-
 
 #bash /home/pearl0/Desktop/MARL/TRPO-in-MARL/scripts/train_mujoco_malfunction.sh "happo" True 0 3000000 6000000
 #bash /home/pearl0/Desktop/MARL/TRPO-in-MARL/scripts/train_mujoco_malfunction.sh "hatrpo" True 0 3000000 6000000

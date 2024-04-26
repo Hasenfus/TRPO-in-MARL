@@ -19,7 +19,7 @@ def make_train_env(all_args):
         def init_env():
             if all_args.env_name == "mujoco":
                 env_args = {"scenario": all_args.scenario,
-                            "env_version": 3,
+                            "env_version":  all_args.env_version,
                             "agent_conf": all_args.agent_conf,
                             "agent_obsk": all_args.agent_obsk,
                             "episode_limit": all_args.episode_length,
@@ -46,7 +46,7 @@ def make_eval_env(all_args):
         def init_env():
             if all_args.env_name == "mujoco":
                 env_args = {"scenario": all_args.scenario,
-                            "env_version": 3,
+                            "env_version": all_args.env_version,
                             "agent_conf": all_args.agent_conf,
                             "agent_obsk": all_args.agent_obsk,
                             "episode_limit": all_args.episode_length,
@@ -86,6 +86,7 @@ def parse_args(args, parser):
     parser.add_argument("--add_center_xy", action='store_true', default=False)
     parser.add_argument("--use_single_network", action='store_true', default=False)
     parser.add_argument("--episode_len", type=int, default=100)
+    parser.add_argument("--env_version", type=int, default=4)
 
 
 
